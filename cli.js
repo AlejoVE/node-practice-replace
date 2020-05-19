@@ -6,13 +6,14 @@ const path = require("path");
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
+const readDir = util.promisify(fs.readdir);
 
 const rawInputs = process.argv;
 const cleanedInputs = rawInputs.slice(2);
 
+const originFileName = cleanedInputs[0];
 const texToReplace = cleanedInputs[1];
 const newText = cleanedInputs[2];
-const originFileName = cleanedInputs[0];
 const targetFileName = cleanedInputs[3];
 
 if (
@@ -25,6 +26,36 @@ if (
     "Missing arguments: you must pass four arguments, example: node cli.js test1.txt 1 2 test2.txt"
   );
   return;
+}
+
+if (
+  originFileName === "-help" ||
+  texToReplace === "-help" ||
+  newText === "-help" ||
+  targetFileName === "-help"
+) {
+  console.log(
+    "Description: You can use this app to replace words in files.\nYou must pass 4 parameters:\nFirst: the name of the file you want to read\nSecond: the word you want to replace\nThird: the new word you want in your file\nFourth: the name of the file you want to write"
+  );
+  return;
+} else if (
+  originFileName === "-list" ||
+  texToReplace === "-list" ||
+  newText === "-list" ||
+  targetFileName === "-list"
+) {
+  renderList();
+  return;
+}
+
+async function renderList() {
+  try {
+    const filesPath = path.join(__dirname, "files");
+    const files = await readDir(filesPath);
+    console.log("List of Files:", files);
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 const originFiletPath = path.join(__dirname, "files", originFileName);
