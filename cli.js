@@ -1,30 +1,89 @@
-/* write a CLI interface for the "replace" function and your files
+const replace = require("./logic/index");
+const fs = require("fs");
+const assert = require("assert");
+const util = require("util");
+const path = require("path");
 
-  command line arguments:
-    1: the file you want to read from
-    2: the old string to replace
-    3: the new string to replace it with
-    4: the file you want to write to
+const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
+const readDir = util.promisify(fs.readdir);
 
-  examples:
-  $ node cli.js the-book-of-sand.txt the any sand-the-any.txt
-  $ node cli.js the-library-of-babel.txt f g library-f-g.txt
+const rawInputs = process.argv;
+const cleanedInputs = rawInputs.slice(2);
 
-  behavior:
-  : parse command line arguments from process.argv
-    (let the user know if they are missing any arguments!)
-  : read from the selected file in the './files' directory
-  : use your logic function to create the new text
-  : write to the new file
-  : console.log a nice message letting the user know what happened
+const originFileName = cleanedInputs[0];
+const texToReplace = cleanedInputs[1];
+const newText = cleanedInputs[2];
+const targetFileName = cleanedInputs[3];
 
-  little challenges:
-  : -help
-    if a user passes in "-help" as any command line argument,
-    log a little description of how the CLI works
-  : -list
-    if a user passes in "-list" as any command line argument,
-    log a list of all the file names in "./files"
+if (
+  originFileName === undefined ||
+  texToReplace === undefined ||
+  newText === undefined ||
+  targetFileName === undefined
+) {
+  console.log(
+    "Missing arguments: you must pass four arguments, example: node cli.js test1.txt 1 2 test2.txt"
+  );
+  return;
+}
 
-*/
+if (
+  originFileName === "-help" ||
+  texToReplace === "-help" ||
+  newText === "-help" ||
+  targetFileName === "-help"
+) {
+  console.log(
+    "Description: You can use this app to replace words in files.\nYou must pass 4 parameters:\nFirst: the name of the file you want to read\nSecond: the word you want to replace\nThird: the new word you want in your file\nFourth: the name of the file you want to write"
+  );
+  return;
+} else if (
+  originFileName === "-list" ||
+  texToReplace === "-list" ||
+  newText === "-list" ||
+  targetFileName === "-list"
+) {
+  renderList();
+  return;
+}
 
+async function renderList() {
+  try {
+    const filesPath = path.join(__dirname, "files");
+    const files = await readDir(filesPath);
+    console.log("List of Files:", files);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const originFiletPath = path.join(__dirname, "files", originFileName);
+const targetFilePath = path.join(__dirname, "files", targetFileName);
+
+const main = async (originalFile, texToReplace, withThis, targetFile) => {
+  try {
+    console.log("Reading the  original file...");
+    const oldFileContent = await readFile(originalFile, "utf-8");
+    const newFileContent = replace(oldFileContent, texToReplace, withThis);
+    console.log("Writing the new file...");
+    await writeFile(targetFile, newFileContent);
+    console.log("Reading the new file...");
+    const newTargetContent = await readFile(targetFile, "utf-8");
+    console.log("Checking that everything is fine...");
+    assert.strictEqual(newTargetContent, newFileContent);
+    console.log("Success, your new text is ready!");
+  } catch (error) {
+    console.log("Something went wrong: ", error);
+  }
+};
+
+main(originFiletPath, texToReplace, newText, targetFilePath);
+
+// little challenges:
+// : -help
+//   if a user passes in "-help" as any command line argument,
+//   log a little description of how the CLI works
+// : -list
+//   if a user passes in "-list" as any command line argument,
+//   log a list of all the file names in "./files"
