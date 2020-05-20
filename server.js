@@ -16,7 +16,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// GET: '/files'
 app.get("/files", async (req, res) => {
   try {
     const files = await readDir(filesPath);
@@ -37,7 +36,6 @@ app.post("/files/add/:name", async (req, res) => {
     res.status(400).send(error.message);
   }
 });
-// redirect -> GET: '/files'
 
 app.put("/files/replace/:oldFile/:newFile", async (req, res) => {
   try {
@@ -58,19 +56,17 @@ app.put("/files/replace/:oldFile/:newFile", async (req, res) => {
   }
 });
 
-// PUT: '/files/replace/:oldFile/:newFile'
-//  body: {toReplace: "str to replace", withThis: "replacement string"}
-//  route logic:
-//    read the old file
-//    use the replace function to create the new text
-//    write the new text to the new file name
-//  note - params should not include .txt, you should add that in the route logic
-// failure: {status: '404', message: `no file named ${oldFile}`  }
-// success: redirect -> GET: '/files'
-
-// GET: '/report'
-//  reads the contents from ./test/report.json and sends it
-// response: {status: 'ok', report }
+app.get("/report", async (req, res) => {
+  try {
+    const reportPath = path.join(filesPath, "..", "test", "report.json");
+    console.log(reportPath);
+    const reportContent = await readFile(reportPath, "utf-8");
+    const json = JSON.parse(reportContent);
+    res.json({ status: "ok", report: json });
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
 
 const port = process.env.PORT || 5000;
 app.listen(port, () =>
