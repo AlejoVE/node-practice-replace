@@ -1,16 +1,30 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const path = require('path');
-const fs = require('fs');
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const path = require("path");
+const fs = require("fs");
+const util = require("util");
 
-const replace = require('./logic');
+const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
+const readDir = util.promisify(fs.readdir);
 
+const replace = require("./logic");
+
+const filesPath = path.join(__dirname, "files");
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
 // GET: '/files'
+app.get("/files", async (req, res) => {
+  try {
+    const files = await readDir(filesPath);
+    res.json({ status: "ok", files: files });
+  } catch (error) {
+    res.status(500).send("Something went wrong");
+  }
+});
 // response: {status: 'ok', files: ['all.txt','file.txt','names.txt']}
 
 // POST: '/files/add/:name'
@@ -32,6 +46,7 @@ app.use(bodyParser.json());
 //  reads the contents from ./test/report.json and sends it
 // response: {status: 'ok', report }
 
-
 const port = process.env.PORT || 5000;
-app.listen(port, () => console.log(`Replacer is serving at http://localhost:${port}`));
+app.listen(port, () =>
+  console.log(`Replacer is serving at http://localhost:${port}`)
+);
