@@ -25,11 +25,18 @@ app.get("/files", async (req, res) => {
     res.status(500).send("Something went wrong");
   }
 });
-// response: {status: 'ok', files: ['all.txt','file.txt','names.txt']}
 
-// POST: '/files/add/:name'
-//  body: {text: "file contents"}
-//  write a new files into ./files with the given name and contents
+app.post("/files/add/:name", async (req, res) => {
+  try {
+    const fileName = req.params.name;
+    const filePath = path.join(filesPath, fileName);
+    const fileContents = req.body.text;
+    await writeFile(filePath, fileContents);
+    res.redirect(303, "/files");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
 // redirect -> GET: '/files'
 
 // PUT: '/files/replace/:oldFile/:newFile'
