@@ -61,10 +61,10 @@ async function renderList() {
 const originFiletPath = path.join(__dirname, "files", originFileName);
 const targetFilePath = path.join(__dirname, "files", targetFileName);
 
-const main = async (originalFile, texToReplace, withThis, targetFile) => {
+const main = async (originFile, texToReplace, withThis, targetFile) => {
   try {
-    console.log("Reading the  original file...");
-    const oldFileContent = await readFile(originalFile, "utf-8");
+    console.log("Reading the  origin file...");
+    const oldFileContent = await readFile(originFile, "utf-8");
     const newFileContent = replace(oldFileContent, texToReplace, withThis);
     console.log("Writing the new file...");
     await writeFile(targetFile, newFileContent);

@@ -59,7 +59,6 @@ app.put("/files/replace/:oldFile/:newFile", async (req, res) => {
 app.get("/report", async (req, res) => {
   try {
     const reportPath = path.join(filesPath, "..", "test", "report.json");
-    console.log(reportPath);
     const reportContent = await readFile(reportPath, "utf-8");
     const json = JSON.parse(reportContent);
     res.json({ status: "ok", report: json });
