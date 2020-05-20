@@ -39,6 +39,25 @@ app.post("/files/add/:name", async (req, res) => {
 });
 // redirect -> GET: '/files'
 
+app.put("/files/replace/:oldFile/:newFile", async (req, res) => {
+  try {
+    const oldFile = req.params.oldFile;
+    const newFile = req.params.newFile;
+    const originalFilePath = path.join(filesPath, `${oldFile}.txt`);
+    const targetFilePath = path.join(filesPath, `${newFile}.txt`);
+    const toReplace = req.body.toReplace;
+    const withThis = req.body.withThis;
+    const originalContent = await readFile(originalFilePath, "utf-8");
+    const newContent = replace(originalContent, toReplace, withThis);
+    await writeFile(targetFilePath, newContent);
+    res.redirect(303, "/files");
+  } catch (error) {
+    res
+      .status(404)
+      .send({ status: "404", message: `no file named ${oldFile}` });
+  }
+});
+
 // PUT: '/files/replace/:oldFile/:newFile'
 //  body: {toReplace: "str to replace", withThis: "replacement string"}
 //  route logic:
